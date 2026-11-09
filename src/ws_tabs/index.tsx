@@ -23,6 +23,8 @@ export type WsTabsItem = {
   key: string;
   title: string;
   disabled?: boolean;
+  /** Optional unread/count badge displayed beside the label. */
+  badge?: number;
 };
 
 export type WsTabsProps = {
@@ -261,6 +263,12 @@ export default function WsTabs({
     <>
       {items.map((tab, index) => {
         const active = tab.key === current;
+        const badge =
+          typeof tab.badge === "number" && tab.badge > 0
+            ? tab.badge > 99
+              ? "99+"
+              : String(tab.badge)
+            : null;
 
         if (pagerMode && scrollX) {
           const inputRange = [
@@ -310,22 +318,58 @@ export default function WsTabs({
               accessibilityState={active ? { selected: true } : {}}
               activeOpacity={0.7}
             >
-              <Animated.Text
-                style={[
-                  styles.tabText,
-                  compact && styles.tabTextCompact,
-                  myanmarLabelStyle(tab.title),
-                  {
-                    color,
-                    opacity,
-                    transform: [{ scale }, { translateY }],
-                    fontWeight: "600",
-                  },
-                ]}
-                numberOfLines={1}
-              >
-                {tab.title}
-              </Animated.Text>
+              {badge ? (
+                <View style={styles.labelRow}>
+                  <Animated.Text
+                    style={[
+                      styles.tabText,
+                      compact && styles.tabTextCompact,
+                      myanmarLabelStyle(tab.title),
+                      {
+                        color,
+                        opacity,
+                        transform: [{ scale }, { translateY }],
+                        fontWeight: "600",
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {tab.title}
+                  </Animated.Text>
+                  <View
+                    style={[
+                      styles.badge,
+                      { backgroundColor: colors.primary },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.badgeText,
+                        { color: colors.textOnPrimary },
+                      ]}
+                    >
+                      {badge}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <Animated.Text
+                  style={[
+                    styles.tabText,
+                    compact && styles.tabTextCompact,
+                    myanmarLabelStyle(tab.title),
+                    {
+                      color,
+                      opacity,
+                      transform: [{ scale }, { translateY }],
+                      fontWeight: "600",
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {tab.title}
+                </Animated.Text>
+              )}
             </TouchableOpacity>
           );
         }
@@ -347,20 +391,54 @@ export default function WsTabs({
             accessibilityState={active ? { selected: true } : {}}
             activeOpacity={0.7}
           >
-            <Text
-              style={[
-                styles.tabText,
-                compact && styles.tabTextCompact,
-                myanmarLabelStyle(tab.title),
-                {
-                  color: active ? colors.textPrimary : colors.textMuted,
-                  fontWeight: active ? "700" : "500",
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {tab.title}
-            </Text>
+            {badge ? (
+              <View style={styles.labelRow}>
+                <Text
+                  style={[
+                    styles.tabText,
+                    compact && styles.tabTextCompact,
+                    myanmarLabelStyle(tab.title),
+                    {
+                      color: active ? colors.textPrimary : colors.textMuted,
+                      fontWeight: active ? "700" : "500",
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {tab.title}
+                </Text>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      { color: colors.textOnPrimary },
+                    ]}
+                  >
+                    {badge}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text
+                style={[
+                  styles.tabText,
+                  compact && styles.tabTextCompact,
+                  myanmarLabelStyle(tab.title),
+                  {
+                    color: active ? colors.textPrimary : colors.textMuted,
+                    fontWeight: active ? "700" : "500",
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {tab.title}
+              </Text>
+            )}
           </TouchableOpacity>
         );
       })}
@@ -445,6 +523,24 @@ const styles = StyleSheet.create({
   },
   tabTextCompact: {
     fontSize: 14,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  badge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: {
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "800",
   },
   disabled: { opacity: 0.4 },
   underline: {
